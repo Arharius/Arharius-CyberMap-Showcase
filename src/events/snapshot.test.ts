@@ -11,7 +11,7 @@ describe('normalized showcase snapshot', () => {
     expect(validateCyberEventStream(snapshot)).toBe(true)
     expect(snapshot).toHaveLength(6)
 
-    const cityNames = new Set(showcaseCities.map((city) => city.name))
+    const cityNames = new Set<string>(showcaseCities.map((city) => city.name))
     expect(cityNames).toEqual(
       new Set([
         'Moscow',
