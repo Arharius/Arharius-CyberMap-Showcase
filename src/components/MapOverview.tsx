@@ -1,4 +1,3 @@
-import { MapStage } from '../map/MapStage'
 import { MapCanvas } from '../map/MapCanvas'
 import type { DisplayEvent } from '../map/buildLayers'
 import { filterKind, type Filter } from '../state/uiStore'
@@ -12,44 +11,41 @@ export function MapOverview({
   filter: Filter
   selectedId: string | null
 }) {
+  const visibleEvents = displayEvents.filter(
+    (event) => filter === 'ALL' || event.kind === filterKind[filter],
+  )
+
   return (
-    <section className="panel map-stage" aria-labelledby="map-heading">
+    <section className="panel map-stage showcase-map" aria-labelledby="map-heading">
       <div className="map-heading">
         <div>
-          <p className="eyebrow">SYNTHETIC ATLAS / 01</p>
-          <h2 id="map-heading">Global simulation overview</h2>
+          <p className="eyebrow">CYBERMAP SHOWCASE / SYNTHETIC CITY NETWORK</p>
+          <h2 id="map-heading">Animated Russia scenario overview</h2>
         </div>
-        <span className="small-badge">OFFLINE / STATIC</span>
+        <span className="small-badge live-badge">AUTO / SYNTHETIC LOOP</span>
       </div>
-      <div className="map-frame">
-        <MapStage
-          events={displayEvents}
-          filter={filter}
-          selectedId={selectedId}
-        >
-          <MapCanvas
-            events={displayEvents.filter(
-              (event) => filter === 'ALL' || event.kind === filterKind[filter],
-            )}
-          />
-        </MapStage>
+
+      <div className="map-frame animated-map-frame">
+        <MapCanvas events={visibleEvents} selectedId={selectedId} />
       </div>
+
       <div className="map-caption">
-        <span>PROCEDURAL WORLD STUDY</span>
-        <span>Display geography only · fictional zones</span>
+        <span>CITY-CENTER MARKERS ONLY</span>
+        <span>No real organizations · no real infrastructure · fictional scenario</span>
       </div>
+
       <div className="legend" aria-label="Simulated category legend">
         <span>
           <i className="scan" />
-          Simulated SCAN
+          Synthetic SCAN
         </span>
         <span>
           <i className="ddos" />
-          Simulated DDOS
+          Synthetic DDOS
         </span>
         <span>
           <i className="exploit" />
-          Simulated EXPLOIT_ATTEMPT
+          Synthetic EXPLOIT_ATTEMPT
         </span>
       </div>
     </section>
