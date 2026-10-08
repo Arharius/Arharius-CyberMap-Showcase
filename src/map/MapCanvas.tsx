@@ -1,51 +1,26 @@
 import type { DisplayEvent } from './buildLayers'
-import { kindClass, showcaseCities } from '../events/snapshot'
+import { kindClass } from '../events/snapshot'
+import {
+  EVENT_TARGET_CITY,
+  RUSSIA_OUTLINE_PATH,
+  SHOWCASE_CITY_NODES,
+  SYNTHETIC_ORIGINS,
+} from './russiaGeometry'
 
-const LON_MIN = 15
-const LON_MAX = 150
-const LAT_MIN = 38
-const LAT_MAX = 75
+const CITY_BY_ID = Object.fromEntries(
+  SHOWCASE_CITY_NODES.map((city) => [city.id, city]),
+) as Record<string, (typeof SHOWCASE_CITY_NODES)[number]>
 
-const project = ([lon, lat]: [number, number]): [number, number] => [
-  70 + ((lon - LON_MIN) / (LON_MAX - LON_MIN)) * 860,
-  485 - ((lat - LAT_MIN) / (LAT_MAX - LAT_MIN)) * 375,
-]
-
-const outlineCoordinates: [number, number][] = [
-  [19, 53],
-  [27, 58],
-  [34, 66],
-  [52, 70],
-  [76, 72],
-  [104, 72],
-  [129, 70],
-  [148, 65],
-  [146, 58],
-  [136, 50],
-  [125, 44],
-  [105, 47],
-  [88, 50],
-  [70, 51],
-  [56, 49],
-  [44, 45],
-  [34, 48],
-  [25, 51],
-]
-
-const labelOffset: Record<string, [number, number]> = {
-  Moscow: [14, -14],
-  'Saint Petersburg': [14, -18],
-  Saratov: [14, 22],
-  Vladivostok: [-102, 22],
-  Murmansk: [14, -18],
-}
-
-function curvedPath(event: DisplayEvent, index: number) {
-  const [sx, sy] = project(event.source)
-  const [tx, ty] = project(event.target)
-  const mx = (sx + tx) / 2
-  const my = (sy + ty) / 2 - Math.max(28, Math.abs(tx - sx) * 0.12) - (index % 2) * 18
-  return `M${sx.toFixed(1)} ${sy.toFixed(1)} Q${mx.toFixed(1)} ${my.toFixed(1)} ${tx.toFixed(1)} ${ty.toFixed(1)}`
+function routeFor(event: DisplayEvent, index: number) {
+  const target = CITY_BY_ID[EVENT_TARGET_CITY[event.id] ?? 'moscow']
+  const origin = SYNTHETIC_ORIGINS[index % SYNTHETIC_ORIGINS.length]
+  const mx = (origin.x + target.x) / 2
+  const my = (origin.y + target.y) / 2 - Math.max(90, Math.abs(target.x - origin.x) * 0.18)
+  return {
+    target,
+    origin,
+    path: `M${origin.x} ${origin.y} Q${mx.toFixed(1)} ${Math.max(45, my).toFixed(1)} ${target.x} ${target.y}`,
+  }
 }
 
 export function MapCanvas({
@@ -55,111 +30,104 @@ export function MapCanvas({
   events: readonly DisplayEvent[]
   selectedId: string | null
 }) {
-  const outlinePoints = outlineCoordinates
-    .map((coordinates) => project(coordinates).join(','))
-    .join(' ')
-
   return (
     <svg
-      className="map-canvas showcase-canvas"
-      viewBox="0 0 1000 560"
+      className="reference-map-svg"
+      viewBox="0 0 2280 1296.1"
       role="img"
       aria-labelledby="map-title map-description"
+      preserveAspectRatio="xMidYMid meet"
     >
-      <title id="map-title">Animated synthetic city-node scenario</title>
+      <title id="map-title">Synthetic cyber-event map of Russia</title>
       <desc id="map-description">
-        Stylized Russia geography with five city-center markers used only as
-        fictional portfolio nodes. Animated routes are synthetic and do not
-        represent real attacks, organizations, infrastructure, or incidents.
+        Portfolio visualization with five public city names. All events,
+        routes, sources and incidents are fictional and synthetic.
       </desc>
 
       <defs>
-        <linearGradient id="map-bg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#06111f" />
-          <stop offset="0.52" stopColor="#0b1d2d" />
-          <stop offset="1" stopColor="#050b13" />
-        </linearGradient>
-        <radialGradient id="land-glow" cx="50%" cy="45%" r="65%">
-          <stop offset="0" stopColor="#174155" stopOpacity="0.92" />
-          <stop offset="0.72" stopColor="#0c2738" stopOpacity="0.72" />
-          <stop offset="1" stopColor="#071522" stopOpacity="0.2" />
-        </radialGradient>
-        <pattern id="showcase-grid" width="42" height="42" patternUnits="userSpaceOnUse">
-          <path d="M42 0H0V42" fill="none" stroke="#3e7184" strokeWidth="0.55" opacity="0.24" />
+        <filter id="edge-blur" x="-8%" y="-8%" width="116%" height="116%">
+          <feGaussianBlur stdDeviation="8" />
+        </filter>
+        <filter id="node-glow" x="-200%" y="-200%" width="400%" height="400%">
+          <feGaussianBlur stdDeviation="7" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+        <pattern id="land-dots" width="13" height="13" patternUnits="userSpaceOnUse">
+          <circle cx="6.5" cy="6.5" r="1.1" fill="rgba(90,175,255,.19)" />
         </pattern>
-        <filter id="city-glow" x="-100%" y="-100%" width="300%" height="300%">
-          <feGaussianBlur stdDeviation="5" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-        <filter id="route-glow" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="2.6" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
+        <linearGradient id="land-gradient" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#0d1d3d" />
+          <stop offset="1" stopColor="#071024" />
+        </linearGradient>
+        <radialGradient id="stage-vignette" cx="50%" cy="45%" r="63%">
+          <stop offset="0" stopColor="#0f2148" stopOpacity=".32" />
+          <stop offset=".58" stopColor="#071329" stopOpacity=".15" />
+          <stop offset="1" stopColor="#02050d" stopOpacity=".78" />
+        </radialGradient>
+        <clipPath id="russia-clip">
+          <path d={RUSSIA_OUTLINE_PATH} />
+        </clipPath>
       </defs>
 
-      <rect width="1000" height="560" rx="18" fill="url(#map-bg)" />
-      <rect x="18" y="18" width="964" height="524" rx="14" fill="url(#showcase-grid)" />
+      <rect width="2280" height="1296.1" fill="transparent" />
+      <rect width="2280" height="1296.1" fill="url(#stage-vignette)" />
 
-      <g className="russia-study">
-        <polygon
-          points={outlinePoints}
-          className="russia-outline"
-          fill="url(#land-glow)"
-        />
-        <polyline
-          points={outlinePoints}
-          className="russia-edge-glow"
-          fill="none"
-        />
+      <path
+        d={RUSSIA_OUTLINE_PATH}
+        className="reference-edge-glow"
+        filter="url(#edge-blur)"
+      />
+      <path d={RUSSIA_OUTLINE_PATH} className="reference-land" />
+      <g clipPath="url(#russia-clip)">
+        <rect width="2280" height="1296.1" fill="url(#land-dots)" />
+        <path className="reference-scan-band" d="M-350 1090 L260 40 L480 40 L-130 1090 Z" />
       </g>
-
-      <g className="scan-sweep-layer" aria-hidden="true">
-        <rect x="-260" y="60" width="220" height="430" className="scan-sweep" />
-      </g>
+      <path d={RUSSIA_OUTLINE_PATH} className="reference-edge" />
 
       <g aria-hidden="true">
         {events.map((event, index) => {
-          const source = project(event.source)
-          const target = project(event.target)
-          const path = curvedPath(event, index)
+          const route = routeFor(event, index)
           const selected = event.id === selectedId
-          const className = kindClass[event.kind]
-          const pathId = `showcase-route-${event.id}`
-
+          const kind = kindClass[event.kind]
+          const id = `ref-route-${event.id}`
           return (
-            <g key={event.id} className={selected ? 'route-group selected-route' : 'route-group'}>
-              <path
-                id={pathId}
-                d={path}
-                className={`showcase-route ${className}${selected ? ' selected' : ''}`}
-                filter="url(#route-glow)"
+            <g
+              key={event.id}
+              className={`reference-route-group ${kind}${selected ? ' is-selected' : ''}`}
+            >
+              <path id={id} d={route.path} className="reference-route" />
+              <circle
+                cx={route.origin.x}
+                cy={route.origin.y}
+                r={selected ? 7 : 4}
+                className="reference-origin"
               />
               <circle
-                cx={source[0]}
-                cy={source[1]}
-                r={selected ? 5 : 3.2}
-                className={`source-node ${className}`}
+                cx={route.target.x}
+                cy={route.target.y}
+                r={selected ? 10 : 6}
+                className="reference-impact"
+                filter="url(#node-glow)"
               />
-              <circle
-                cx={target[0]}
-                cy={target[1]}
-                r={selected ? 6.5 : 4}
-                className={`target-flash ${className}`}
-              />
-              <circle r={selected ? 5 : 3.5} className={`route-particle ${className}`}>
+              <circle className="reference-packet" r={selected ? 8 : 5.5}>
                 <animateMotion
-                  dur={`${3.2 + (index % 3) * 0.55}s`}
-                  begin={`${index * -0.7}s`}
+                  dur={`${2.8 + (index % 3) * 0.55}s`}
+                  begin={`${-index * 0.62}s`}
                   repeatCount="indefinite"
-                  rotate="auto"
                 >
-                  <mpath href={`#${pathId}`} />
+                  <mpath href={`#${id}`} />
+                </animateMotion>
+              </circle>
+              <circle className="reference-packet reference-packet-secondary" r="3.4">
+                <animateMotion
+                  dur={`${3.7 + (index % 2) * 0.8}s`}
+                  begin={`${-1.2 - index * 0.43}s`}
+                  repeatCount="indefinite"
+                >
+                  <mpath href={`#${id}`} />
                 </animateMotion>
               </circle>
             </g>
@@ -167,41 +135,22 @@ export function MapCanvas({
         })}
       </g>
 
-      <g className="city-node-layer">
-        {showcaseCities.map((city, index) => {
-          const [x, y] = project(city.coordinates)
-          const [dx, dy] = labelOffset[city.name] ?? [12, -12]
-
-          return (
-            <g key={city.name} className="city-node" transform={`translate(${x} ${y})`}>
-              <circle
-                r="20"
-                className="city-pulse city-pulse-outer"
-                style={{ animationDelay: `${index * -0.55}s` }}
-              />
-              <circle
-                r="10"
-                className="city-pulse city-pulse-inner"
-                style={{ animationDelay: `${index * -0.32}s` }}
-              />
-              <circle r="4.8" className="city-core" filter="url(#city-glow)" />
-              <line x1="0" y1="0" x2={dx > 0 ? 10 : -10} y2={dy > 0 ? 10 : -10} className="city-leader" />
-              <text x={dx} y={dy} className="city-label">
-                {city.name}
-              </text>
-              <text x={dx} y={dy + 13} className="city-sub-label">
-                SYNTHETIC NODE
-              </text>
-            </g>
-          )
-        })}
-      </g>
-
-      <g className="map-hud" aria-hidden="true">
-        <text x="42" y="48">CYBERMAP / PORTFOLIO MODE</text>
-        <text x="958" y="48" textAnchor="end">AUTO LOOP · SYNTHETIC</text>
-        <text x="42" y="526">NO REAL TARGETS · NO REAL INFRASTRUCTURE</text>
-        <text x="958" y="526" textAnchor="end">CITY-CENTER DISPLAY MARKERS</text>
+      <g className="reference-city-nodes">
+        {SHOWCASE_CITY_NODES.map((city, index) => (
+          <g key={city.id} transform={`translate(${city.x} ${city.y})`}>
+            <circle
+              r="24"
+              className="reference-city-ring"
+              style={{ animationDelay: `${-index * 0.48}s` }}
+            />
+            <circle
+              r="8"
+              className="reference-city-halo"
+              filter="url(#node-glow)"
+            />
+            <circle r="3.3" className="reference-city-core" />
+          </g>
+        ))}
       </g>
     </svg>
   )
