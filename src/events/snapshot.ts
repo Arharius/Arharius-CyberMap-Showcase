@@ -11,12 +11,15 @@ export const kindClass: Record<Kind, string> = {
   DDOS: 'ddos',
   EXPLOIT_ATTEMPT: 'exploit',
 }
+
 const events: {
   id: string
   kind: Kind
   timestamp: string
   source: string
+  sourceCoords: [number, number]
   target: string
+  targetCoords: [number, number]
   severity: string
   confidence: string
 }[] = [
@@ -24,8 +27,10 @@ const events: {
     id: 'SYN-006',
     kind: 'EXPLOIT_ATTEMPT',
     timestamp: '00:04:32',
-    source: 'Zone C',
-    target: 'Zone F',
+    source: 'Synthetic Edge 01',
+    sourceCoords: [18, 53],
+    target: 'Moscow',
+    targetCoords: [37.62, 55.76],
     severity: 'Elevated',
     confidence: '0.86',
   },
@@ -33,8 +38,10 @@ const events: {
     id: 'SYN-005',
     kind: 'SCAN',
     timestamp: '00:04:18',
-    source: 'Zone A',
-    target: 'Zone D',
+    source: 'Synthetic Edge 02',
+    sourceCoords: [18, 69],
+    target: 'Murmansk',
+    targetCoords: [33.08, 68.96],
     severity: 'Low',
     confidence: '0.92',
   },
@@ -42,8 +49,10 @@ const events: {
     id: 'SYN-004',
     kind: 'DDOS',
     timestamp: '00:03:56',
-    source: 'Zone B',
-    target: 'Zone E',
+    source: 'Synthetic Edge 03',
+    sourceCoords: [149, 48],
+    target: 'Vladivostok',
+    targetCoords: [131.89, 43.12],
     severity: 'Moderate',
     confidence: '0.78',
   },
@@ -51,8 +60,10 @@ const events: {
     id: 'SYN-003',
     kind: 'SCAN',
     timestamp: '00:03:41',
-    source: 'Zone D',
-    target: 'Zone F',
+    source: 'Synthetic Edge 04',
+    sourceCoords: [20, 58],
+    target: 'Saint Petersburg',
+    targetCoords: [30.34, 59.93],
     severity: 'Low',
     confidence: '0.89',
   },
@@ -60,8 +71,10 @@ const events: {
     id: 'SYN-002',
     kind: 'DDOS',
     timestamp: '00:03:12',
-    source: 'Zone A',
-    target: 'Zone E',
+    source: 'Synthetic Edge 05',
+    sourceCoords: [55, 40],
+    target: 'Saratov',
+    targetCoords: [46.03, 51.53],
     severity: 'Moderate',
     confidence: '0.81',
   },
@@ -69,21 +82,25 @@ const events: {
     id: 'SYN-001',
     kind: 'SCAN',
     timestamp: '00:02:48',
-    source: 'Zone C',
-    target: 'Zone B',
+    source: 'Synthetic Edge 06',
+    sourceCoords: [92, 40],
+    target: 'Moscow',
+    targetCoords: [37.62, 55.76],
     severity: 'Low',
     confidence: '0.94',
   },
 ]
-// Fictional display coordinates for the existing static snapshot, not actor locations.
-const displayZones: Record<string, [number, number]> = {
-  'Zone A': [-120, 45],
-  'Zone B': [-80, -25],
-  'Zone C': [5, 50],
-  'Zone D': [25, -15],
-  'Zone E': [105, 40],
-  'Zone F': [135, -40],
-}
+
+export const showcaseCities = [
+  { name: 'Moscow', coordinates: [37.62, 55.76] as [number, number] },
+  {
+    name: 'Saint Petersburg',
+    coordinates: [30.34, 59.93] as [number, number],
+  },
+  { name: 'Saratov', coordinates: [46.03, 51.53] as [number, number] },
+  { name: 'Vladivostok', coordinates: [131.89, 43.12] as [number, number] },
+  { name: 'Murmansk', coordinates: [33.08, 68.96] as [number, number] },
+] as const
 
 export const snapshot: CyberEvent[] = events.map((event) => ({
   schema_version: '1.0',
@@ -96,15 +113,15 @@ export const snapshot: CyberEvent[] = events.map((event) => ({
   scope: 'GLOBAL',
   source: {
     country_code: 'ZZ',
-    display_lon: displayZones[event.source][0],
-    display_lat: displayZones[event.source][1],
+    display_lon: event.sourceCoords[0],
+    display_lat: event.sourceCoords[1],
     geo_is_actor: false,
   },
   target: {
-    display_name: `Simulation Target ${event.target.slice(-1)}`,
+    display_name: event.target,
     country_code: 'ZZ',
-    display_lon: displayZones[event.target][0],
-    display_lat: displayZones[event.target][1],
+    display_lon: event.targetCoords[0],
+    display_lat: event.targetCoords[1],
     target_class: 'demo',
   },
   severity:
@@ -117,10 +134,14 @@ export const snapshot: CyberEvent[] = events.map((event) => ({
   feed_source: 'scenario-generator',
   scenario_id: 'atlas-v1',
   seed: '42',
-  metadata: { sourceZone: event.source, targetZone: event.target },
+  metadata: {
+    sourceZone: event.source,
+    targetZone: event.target,
+    syntheticCityNode: true,
+  },
 }))
 
-/** Validate before projecting normalized records into the static display. */
+/** Validate before projecting normalized records into the display. */
 export function presentEvents(records: readonly CyberEvent[]) {
   if (!validateCyberEventStream(records))
     throw new Error('Invalid simulated snapshot')
@@ -130,7 +151,7 @@ export function presentEvents(records: readonly CyberEvent[]) {
       id: record.event_id,
       kind: record.event_kind,
       timestamp: record.timestamp.slice(11, 19),
-      source: String(record.metadata.sourceZone ?? 'Fictional source zone'),
+      source: String(record.metadata.sourceZone ?? 'Synthetic source node'),
       target: String(record.metadata.targetZone ?? record.target.display_name),
       severity: record.severity,
       confidence: record.confidence.toFixed(2),
