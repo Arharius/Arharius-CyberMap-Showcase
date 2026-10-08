@@ -35,7 +35,8 @@ describe('normalized showcase snapshot', () => {
         geo_is_actor: false,
       })
       expect(event.target.country_code).toBe('ZZ')
-      expect(cityNames.has(event.target.display_name)).toBe(true)
+      expect(event.target.display_name).toMatch(/^Simulation Target \\d+$/)
+      expect(cityNames.has(String(event.metadata.targetZone))).toBe(true)
       expect(event.metadata.syntheticCityNode).toBe(true)
       expect(String(event.metadata.sourceZone)).toMatch(/^Synthetic Edge \d{2}$/)
     }
@@ -57,7 +58,7 @@ describe('normalized showcase snapshot', () => {
         source: [record.source.display_lon, record.source.display_lat],
         target: [record.target.display_lon, record.target.display_lat],
       })
-      expect(event.target).toBe(record.target.display_name)
+      expect(event.target).toBe(String(record.metadata.targetZone))
       expect(event.severity).toBe(record.severity)
       expect(event.confidence).toBe(record.confidence.toFixed(2))
     }
