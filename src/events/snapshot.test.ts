@@ -1,11 +1,27 @@
 import { describe, expect, it } from 'vitest'
-import { snapshot, presentEvents } from './snapshot'
+import {
+  snapshot,
+  presentEvents,
+  showcaseCities,
+} from './snapshot'
 import { validateCyberEventStream, type CyberEvent } from './schema'
 
-describe('normalized shell snapshot', () => {
-  it('uses illustrative simulated semantics and fictional geography for every record', () => {
+describe('normalized showcase snapshot', () => {
+  it('uses illustrative simulated semantics and city-level fictional nodes', () => {
     expect(validateCyberEventStream(snapshot)).toBe(true)
     expect(snapshot).toHaveLength(6)
+
+    const cityNames = new Set(showcaseCities.map((city) => city.name))
+    expect(cityNames).toEqual(
+      new Set([
+        'Moscow',
+        'Saint Petersburg',
+        'Saratov',
+        'Vladivostok',
+        'Murmansk',
+      ]),
+    )
+
     for (const event of snapshot) {
       expect(event).toMatchObject({
         data_mode: 'SIMULATED',
@@ -19,7 +35,9 @@ describe('normalized shell snapshot', () => {
         geo_is_actor: false,
       })
       expect(event.target.country_code).toBe('ZZ')
-      expect(event.target.display_name).toMatch(/^Simulation Target [A-F]$/)
+      expect(cityNames.has(event.target.display_name)).toBe(true)
+      expect(event.metadata.syntheticCityNode).toBe(true)
+      expect(String(event.metadata.sourceZone)).toMatch(/^Synthetic Edge \d{2}$/)
     }
   })
 
@@ -39,6 +57,7 @@ describe('normalized shell snapshot', () => {
         source: [record.source.display_lon, record.source.display_lat],
         target: [record.target.display_lon, record.target.display_lat],
       })
+      expect(event.target).toBe(record.target.display_name)
       expect(event.severity).toBe(record.severity)
       expect(event.confidence).toBe(record.confidence.toFixed(2))
     }
