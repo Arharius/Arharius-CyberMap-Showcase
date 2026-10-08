@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useStore } from 'zustand'
 import { createUIStore, filterKind, type UIState } from './state/uiStore'
 import type { CyberEvent } from './events/schema'
@@ -14,7 +14,7 @@ import './styles.css'
 
 export { SIMULATION_DISCLOSURE } from './components/SimulationDisclosure'
 
-/** Own the UI store once; children receive explicit state and display data. */
+/** Own the UI store once; the public showcase advances selection automatically. */
 export function App({
   initialPresentation = false,
   records = snapshot,
@@ -23,6 +23,20 @@ export function App({
   records?: readonly CyberEvent[]
 }) {
   const [store] = useState(() => createUIStore(initialPresentation))
+
+  useEffect(() => {
+    const ids = presentEvents(records).map((event) => event.id)
+    if (ids.length < 2) return
+
+    const timer = window.setInterval(() => {
+      const current = store.getState().selectedId
+      const index = Math.max(0, ids.indexOf(current ?? ''))
+      store.getState().setSelectedId(ids[(index + 1) % ids.length])
+    }, 2200)
+
+    return () => window.clearInterval(timer)
+  }, [records, store])
+
   const state = useStore(store)
   return <DirectorScreen state={state} records={records} />
 }
@@ -55,13 +69,13 @@ export function DirectorScreen({
             <div>
               <h1 id="page-title">CyberMap</h1>
               <p>
-                DIRECTOR SCREEN <span>/</span> GLOBAL SIMULATION
+                PORTFOLIO SHOWCASE <span>/</span> SYNTHETIC CITY NETWORK
               </p>
             </div>
           </div>
           <div className="header-actions">
             <span className="demo-badge">DEMO / SYNTHETIC</span>
-            <span className="snapshot-label">STATIC SNAPSHOT</span>
+            <span className="snapshot-label auto-label">AUTONOMOUS LOOP</span>
             <button
               aria-pressed={presentation}
               onClick={() => setPresentation(!presentation)}
