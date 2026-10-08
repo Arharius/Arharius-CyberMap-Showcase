@@ -35,7 +35,7 @@ describe('normalized showcase snapshot', () => {
         geo_is_actor: false,
       })
       expect(event.target.country_code).toBe('ZZ')
-      expect(event.target.display_name).toMatch(/^Simulation Target \\d+$/)
+      expect(event.target.display_name).toMatch(/^Simulation Target \d+$/)
       expect(cityNames.has(String(event.metadata.targetZone))).toBe(true)
       expect(event.metadata.syntheticCityNode).toBe(true)
       expect(String(event.metadata.sourceZone)).toMatch(/^Synthetic Edge \d{2}$/)
