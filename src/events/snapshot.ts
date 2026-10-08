@@ -102,7 +102,7 @@ export const showcaseCities = [
   { name: 'Murmansk', coordinates: [33.08, 68.96] as [number, number] },
 ] as const
 
-export const snapshot: CyberEvent[] = events.map((event) => ({
+export const snapshot: CyberEvent[] = events.map((event, index) => ({
   schema_version: '1.0',
   event_id: event.id,
   timestamp: `2026-09-18T${event.timestamp}Z`,
@@ -118,7 +118,7 @@ export const snapshot: CyberEvent[] = events.map((event) => ({
     geo_is_actor: false,
   },
   target: {
-    display_name: event.target,
+    display_name: `Simulation Target ${index + 1}`,
     country_code: 'ZZ',
     display_lon: event.targetCoords[0],
     display_lat: event.targetCoords[1],
