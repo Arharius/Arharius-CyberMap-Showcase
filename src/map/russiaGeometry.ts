@@ -11,3 +11,21 @@ export const SHOWCASE_CITY_NODES = [
   { id: 'vladivostok', name: 'Владивосток', x: 1866.1, y: 1157.6 },
   { id: 'murmansk', name: 'Мурманск', x: 437.4, y: 467.4 },
 ] as const
+
+export const EVENT_TARGET_CITY: Record<string, string> = {
+  'SYN-006': 'moscow',
+  'SYN-005': 'murmansk',
+  'SYN-004': 'vladivostok',
+  'SYN-003': 'spb',
+  'SYN-002': 'saratov',
+  'SYN-001': 'moscow',
+}
+
+export const SYNTHETIC_ORIGINS = [
+  { x: 90, y: 260 },
+  { x: 210, y: 410 },
+  { x: 760, y: 1240 },
+  { x: 1280, y: 1230 },
+  { x: 2190, y: 1050 },
+  { x: 2160, y: 640 },
+] as const
