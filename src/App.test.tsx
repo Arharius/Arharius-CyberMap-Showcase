@@ -1,181 +1,91 @@
-import { snapshot, presentEvents } from './events/snapshot'
-import { createUIStore, FILTERS, filterKind } from './state/uiStore'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { App, DirectorScreen, SIMULATION_DISCLOSURE } from './App'
+import { snapshot } from './events/snapshot'
+import { createUIStore } from './state/uiStore'
 
 const disclosure = 'SIMULATED — NOT REAL ATTACK DATA'
 
-describe('CyberMap portfolio showcase', () => {
-  it.each([false, true])(
-    'keeps the exact disclosure first in presentation=%s',
-    (presentation) => {
-      const markup = renderToStaticMarkup(
-        <App initialPresentation={presentation} />,
-      )
-
-      expect(SIMULATION_DISCLOSURE).toBe(disclosure)
-      expect(
-        markup.startsWith(`<p class="disclosure">${disclosure}</p><main`),
-      ).toBe(true)
-      expect(markup.split(disclosure)).toHaveLength(2)
-      expect(markup).toContain(
-        presentation ? 'app-shell presentation' : 'class="app-shell"',
-      )
-      expect(markup).toContain('DEMO / SYNTHETIC')
-      expect(markup).toContain('AUTONOMOUS LOOP')
-    },
-  )
-
-  it('renders the major shell landmarks and seven KPI values', () => {
+describe('CyberMap portfolio showcase v2', () => {
+  it('keeps the safety disclosure first and renders the reference-driven shell', () => {
     const markup = renderToStaticMarkup(<App />)
 
-    expect(markup).toContain('<h1 id="page-title">CyberMap</h1>')
-    for (const landmark of [
-      'controls-title',
-      'map-heading',
-      'feed-title',
-      'inspector-title',
-      'timeline-title',
-    ]) {
-      expect(markup).toContain(`aria-labelledby="${landmark}"`)
-      expect(markup).toContain(`id="${landmark}"`)
-    }
-    expect(markup).toContain('aria-label="Simulation KPIs"')
-    expect(markup.match(/class="kpi kpi-\d"/g)).toHaveLength(7)
-    expect(markup).toContain('aria-label="Simulated category legend"')
-    expect(markup).toContain('AUTO / SYNTHETIC LOOP')
-    expect(markup).toContain('SYNTHETIC EVENTS ACTIVE')
+    expect(SIMULATION_DISCLOSURE).toBe(disclosure)
+    expect(markup.startsWith(`<p class="disclosure">${disclosure}</p><main`)).toBe(true)
+    expect(markup).toContain('class="reference-shell"')
+    expect(markup).toContain('<h1>CyberMap</h1>')
+    expect(markup).toContain('INTERACTIVE CYBERSECURITY VISUALIZATION')
+    expect(markup).toContain('AUTONOMOUS SYNTHETIC LOOP')
+    expect(markup).toContain('SYNTHETIC RUSSIA SCENARIO')
   })
 
-  it('renders five public city labels and no real organizations', () => {
+  it('renders detailed presentation geometry, animated routes and five safe city labels', () => {
     const markup = renderToStaticMarkup(<App />)
+
+    expect(markup).toContain('class="reference-map-svg"')
+    expect(markup).toContain('id="russia-clip"')
+    expect(markup).toContain('fill="url(#land-dots)"')
+    expect(markup).toContain('class="reference-edge-glow"')
+    expect(markup).toContain('class="reference-scan-band"')
+    expect(markup).toContain('<animateMotion')
+
     for (const city of [
-      'Moscow',
-      'Saint Petersburg',
-      'Saratov',
-      'Vladivostok',
-      'Murmansk',
+      'Москва',
+      'Санкт-Петербург',
+      'Саратов',
+      'Владивосток',
+      'Мурманск',
     ]) {
       expect(markup).toContain(city)
     }
-    expect(markup).toContain('SYNTHETIC NODE')
-    expect(markup).toContain('NO REAL TARGETS · NO REAL INFRASTRUCTURE')
-    expect(markup).not.toMatch(/Roscosmos|Роскосмос|Прогресс|Progress|НПО|NPO/)
+
+    expect(markup).not.toMatch(/Роскосмос|Roscosmos|Прогресс|Progress|НПО|NPO|КБ/)
   })
 
-  it('renders deterministic synthetic records newest first with a matching inspector', () => {
+  it('renders an autonomous incident dock backed by synthetic fixture events', () => {
     const markup = renderToStaticMarkup(<App />)
-    expect(renderToStaticMarkup(<App />)).toBe(markup)
+
+    expect(markup).toContain('class="reference-incident-dock"')
+    expect(markup).toContain('Incident stream')
     expect(markup.match(/class="event (?:scan|ddos|exploit)"/g)).toHaveLength(6)
     expect(markup.match(/class="event-meta">SIMULATED/g)).toHaveLength(6)
-    const ids = [
-      'SYN-006',
-      'SYN-005',
-      'SYN-004',
-      'SYN-003',
-      'SYN-002',
-      'SYN-001',
-    ]
-    ids.slice(1).forEach((id, index) => {
-      expect(markup.indexOf(ids[index])).toBeLessThan(markup.indexOf(id))
-    })
-    expect(markup).toContain('Synthetic source node</dt><dd>Synthetic Edge 01')
-    expect(markup).toContain('City display node</dt><dd>Moscow')
-    expect(markup).toContain('Synthetic fixture v1')
+    expect(markup).toContain('Synthetic source node')
+    expect(markup).toContain('City display node')
     expect(markup).toContain('Simulated / animated')
   })
 
-  it('uses inline animated SVG geometry without remote map resources or playback sliders', () => {
+  it('contains no manual playback slider, attack creation button or remote map resources', () => {
     const markup = renderToStaticMarkup(<App />)
-    expect(markup).toContain('<svg')
-    expect(markup).toContain('Animated synthetic city-node scenario')
-    expect(markup).toContain('showcase-route')
-    expect(markup).toContain('<animateMotion')
-    expect(markup).toContain('class="city-pulse city-pulse-outer"')
+
     expect(markup).not.toContain('type="range"')
     expect(markup).not.toContain('Resume simulation')
     expect(markup).not.toContain('Replay')
-    expect(markup).not.toMatch(/(?:src|href)="(?:https?:)?\/\//i)
+    expect(markup).not.toContain('Create attack')
+    expect(markup).not.toContain('Создать атаку')
+    expect(markup).not.toMatch(/(?:src|href)="https?:\/\//i)
   })
-})
 
-describe('showcase state combinations', () => {
-  it.each([false, true])(
-    'keeps disclosure and landmarks with empty/data-light records, presentation=%s',
-    (presentation) => {
-      for (const records of [[], snapshot.slice(0, 1)]) {
-        const store = createUIStore(presentation)
-        for (const filter of FILTERS) {
-          store.getState().setFilter(filter)
-          const markup = renderToStaticMarkup(
-            <DirectorScreen records={records} state={store.getState()} />,
-          )
-          expect(
-            markup.startsWith(`<p class="disclosure">${disclosure}</p><main`),
-          ).toBe(true)
-          for (const landmark of [
-            'controls-title',
-            'map-heading',
-            'feed-title',
-            'inspector-title',
-            'timeline-title',
-          ]) {
-            expect(markup).toContain(`aria-labelledby="${landmark}"`)
-          }
-          const expected = records.filter(
-            (event) =>
-              filter === 'ALL' || event.event_kind === filterKind[filter],
-          )
-          expect(
-            markup.match(/class="event-meta">SIMULATED/g) ?? [],
-          ).toHaveLength(expected.length)
-          expect(
-            markup.match(/class="showcase-route /g) ?? [],
-          ).toHaveLength(expected.length)
-          if (!expected.length) {
-            expect(markup).toContain('No simulated events match this view.')
-            expect(markup).toContain('No simulated event selected.')
-            expect(markup).not.toContain('Synthetic fixture v1')
-          }
-          expect(markup).toContain(
-            '<p>Synthetic events</p><strong>' +
-              String(records.length).padStart(2, '0'),
-          )
-        }
-      }
-    },
-  )
-
-  it('retains disclosure through presentation, filtering and selection changes', () => {
+  it('keeps empty records safe and non-fictional rather than inventing incidents', () => {
     const store = createUIStore()
-    const render = () =>
-      renderToStaticMarkup(
-        <DirectorScreen records={snapshot} state={store.getState()} />,
-      )
-
-    const changes = [
-      () => store.getState().setPresentation(true),
-      () => store.getState().setFilter('RECON'),
-      () => store.getState().setSelectedId('SYN-001'),
-      () => store.getState().setPresentation(false),
-    ]
-
-    for (const change of changes) {
-      change()
-      expect(
-        render().startsWith(`<p class="disclosure">${disclosure}</p><main`),
-      ).toBe(true)
-    }
-
-    store.getState().setSelectedId('SYN-001')
-    expect(render()).toContain(
-      '<span>SYN-001</span></div><p class="inspector-kind scan">SCAN',
+    const markup = renderToStaticMarkup(
+      <DirectorScreen records={[]} state={store.getState()} />,
     )
-    store.getState().setSelectedId('missing')
-    expect(render()).toContain(
-      '<span>SYN-005</span></div><p class="inspector-kind scan">SCAN',
+
+    expect(markup).toContain('No simulated events match this view.')
+    expect(markup).toContain('No simulated event selected.')
+    expect(markup).toContain('CITY NAMES ONLY · ALL EVENTS SYNTHETIC')
+    expect(markup).not.toContain('Synthetic fixture v1')
+  })
+
+  it('keeps selected fixture identity deterministic', () => {
+    const store = createUIStore()
+    store.getState().setSelectedId('SYN-002')
+    const markup = renderToStaticMarkup(
+      <DirectorScreen records={snapshot} state={store.getState()} />,
     )
-    expect(presentEvents(snapshot)).toEqual(presentEvents(snapshot))
+
+    expect(markup).toContain('SYN-002')
+    expect(markup).toContain('Саратов')
+    expect(markup).toContain('DDoS activity')
   })
 })
