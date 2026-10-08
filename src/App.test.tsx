@@ -139,7 +139,7 @@ describe('showcase state combinations', () => {
             expect(markup).not.toContain('Synthetic fixture v1')
           }
           expect(markup).toContain(
-            '<p>Simulated events</p><strong>' +
+            '<p>Synthetic events</p><strong>' +
               String(records.length).padStart(2, '0'),
           )
         }
