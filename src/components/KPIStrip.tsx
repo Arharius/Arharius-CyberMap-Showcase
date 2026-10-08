@@ -4,13 +4,13 @@ export function KPIStrip({ events }: { events: readonly ShellEvent[] }) {
   const count = (kind: ShellEvent['kind']) =>
     countLabel(events.filter((event) => event.kind === kind).length)
   const kpis = [
-    ['Scenario', 'Atlas / 01'],
-    ['Scenario time', '00:04:32'],
-    ['Simulated events', countLabel(events.length)],
-    ['Simulated SCAN', count('SCAN')],
-    ['Simulated DDOS', count('DDOS')],
-    ['Simulated EXPLOIT', count('EXPLOIT_ATTEMPT')],
-    ['Static visual marks', countLabel(events.length)],
+    ['Scenario', 'City Mesh / 01'],
+    ['Loop mode', 'AUTO'],
+    ['Synthetic events', countLabel(events.length)],
+    ['Synthetic SCAN', count('SCAN')],
+    ['Synthetic DDOS', count('DDOS')],
+    ['Synthetic EXPLOIT', count('EXPLOIT_ATTEMPT')],
+    ['City nodes', '05'],
   ]
   return (
     <section className="kpi-strip" aria-label="Simulation KPIs">
@@ -20,10 +20,10 @@ export function KPIStrip({ events }: { events: readonly ShellEvent[] }) {
           <strong>{value}</strong>
           <span>
             {index === 0
-              ? 'Synthetic Atlas study'
+              ? 'Synthetic city scenario'
               : index === 1
-                ? 'Local scenario clock'
-                : 'Static demo fixture'}
+                ? 'Continuous visual loop'
+                : 'Portfolio demo fixture'}
           </span>
         </div>
       ))}

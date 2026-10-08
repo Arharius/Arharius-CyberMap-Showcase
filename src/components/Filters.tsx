@@ -1,7 +1,6 @@
 import { FILTERS as filters, filterKind, type UIState } from '../state/uiStore'
 import { countLabel, type ShellEvent } from '../events/snapshot'
 import { EVENT_KINDS } from '../events/schema'
-import { ScenarioControls } from './ScenarioControls'
 
 export function Filters({
   state,
@@ -27,13 +26,15 @@ export function Filters({
   const mixLabel = mix
     .map(([kind, percent]) => `${percent}% ${kind}`)
     .join(' / ')
+
   return (
     <aside className="panel controls" aria-labelledby="controls-title">
       <div className="panel-heading">
-        <h2 id="controls-title">Display controls</h2>
-        <span>01</span>
+        <h2 id="controls-title">Display filters</h2>
+        <span>AUTO</span>
       </div>
-      <p className="field-label">SIMULATED CATEGORIES</p>
+
+      <p className="field-label">SYNTHETIC CATEGORIES</p>
       <div className="filters">
         {filters.map((value) => (
           <button
@@ -53,18 +54,13 @@ export function Filters({
           </button>
         ))}
       </div>
+
       <p className="help">
-        RECON displays SCAN. EXPLOIT displays EXPLOIT_ATTEMPT. All categories
-        are simulated.
+        RECON displays SCAN. EXPLOIT displays EXPLOIT_ATTEMPT. Every event is
+        simulated and the visual loop runs automatically.
       </p>
-      <ScenarioControls {...state} />
+
       <div className="control-section">
-        <label htmlFor="rate">EVENT RATE · STATIC PREVIEW</label>
-        <input id="rate" type="range" min="0" max="100" value="35" disabled />
-        <div className="range-label">
-          <span>Sparse</span>
-          <span>Dense</span>
-        </div>
         <p className="field-label">FIXTURE EVENT MIX</p>
         <div className="mix-bar" aria-label={mixLabel}>
           {mix.map(([kind, percent]) => (
@@ -73,12 +69,13 @@ export function Filters({
         </div>
         <p className="help">{mixLabel}</p>
       </div>
+
       <div className="diagnostics">
-        <span className="status-dot" /> Offline procedural display
+        <span className="status-dot" /> Animated synthetic display
         <p>
           {events.length} normalized synthetic records.
           <br />
-          No geographic precision implied.
+          Five public city labels; zero real target infrastructure.
         </p>
       </div>
     </aside>

@@ -4,12 +4,12 @@ export function EventInspector({ selected }: { selected?: ShellEvent }) {
   const fields = selected
     ? [
         ['Scenario timestamp', selected.timestamp],
-        ['Source display zone', selected.source],
-        ['Target display zone', selected.target],
+        ['Synthetic source node', selected.source],
+        ['City display node', selected.target],
         ['Synthetic severity', selected.severity],
         ['Fixture confidence', selected.confidence],
         ['Provenance', 'Synthetic fixture v1'],
-        ['Simulation state', 'Simulated / static'],
+        ['Simulation state', 'Simulated / animated'],
       ]
     : []
 
@@ -33,8 +33,8 @@ export function EventInspector({ selected }: { selected?: ShellEvent }) {
             ))}
           </dl>
           <p className="help">
-            Severity is visual priority; confidence is simulation coherence.
-            Illustrative only.
+            City names are public geographic labels only. Nodes, events and
+            incidents are fictional.
           </p>
         </>
       ) : (

@@ -15,7 +15,7 @@ export function SimulatedEventFeed({
         <h2 id="feed-title">Simulated event feed</h2>
         <span>{String(visibleEvents.length).padStart(2, '0')}</span>
       </div>
-      <p className="section-note">Static fixture / newest first</p>
+      <p className="section-note">Autonomous loop / newest first</p>
       <div className="event-list">
         {visibleEvents.length === 0 && (
           <p className="help" role="status">
