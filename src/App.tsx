@@ -1,20 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useStore } from 'zustand'
-import { createUIStore, filterKind, type UIState } from './state/uiStore'
+import { createUIStore, type UIState } from './state/uiStore'
 import type { CyberEvent } from './events/schema'
 import { snapshot, presentEvents } from './events/snapshot'
 import { SimulationDisclosure } from './components/SimulationDisclosure'
-import { KPIStrip } from './components/KPIStrip'
-import { Filters } from './components/Filters'
 import { MapOverview } from './components/MapOverview'
 import { SimulatedEventFeed } from './components/SimulatedEventFeed'
 import { EventInspector } from './components/EventInspector'
-import { TimelineControls } from './components/TimelineControls'
 import './styles.css'
 
 export { SIMULATION_DISCLOSURE } from './components/SimulationDisclosure'
 
-/** Own the UI store once; the public showcase advances selection automatically. */
 export function App({
   initialPresentation = false,
   records = snapshot,
@@ -32,7 +28,7 @@ export function App({
       const current = store.getState().selectedId
       const index = Math.max(0, ids.indexOf(current ?? ''))
       store.getState().setSelectedId(ids[(index + 1) % ids.length])
-    }, 2200)
+    }, 2400)
 
     return () => window.clearInterval(timer)
   }, [records, store])
@@ -48,60 +44,55 @@ export function DirectorScreen({
   state: UIState
   records: readonly CyberEvent[]
 }) {
-  const { presentation, setPresentation, filter, selectedId, setSelectedId } =
-    state
+  const { selectedId, setSelectedId } = state
   const events = presentEvents(records)
-  const visibleEvents = events.filter(
-    (event) => filter === 'ALL' || event.kind === filterKind[filter],
-  )
   const selected =
-    visibleEvents.find((event) => event.id === selectedId) ?? visibleEvents[0]
+    events.find((event) => event.id === selectedId) ?? events[0]
 
   return (
     <>
       <SimulationDisclosure />
-      <main className={`app-shell${presentation ? ' presentation' : ''}`}>
-        <header className="header">
-          <div className="brand">
-            <span className="brand-mark" aria-hidden="true">
-              ◈
-            </span>
+      <main className="reference-shell">
+        <header className="reference-header">
+          <div className="reference-brand">
+            <span className="reference-mark" aria-hidden="true">◈</span>
             <div>
-              <h1 id="page-title">CyberMap</h1>
-              <p>
-                PORTFOLIO SHOWCASE <span>/</span> SYNTHETIC CITY NETWORK
-              </p>
+              <h1>CyberMap</h1>
+              <p>INTERACTIVE CYBERSECURITY VISUALIZATION</p>
             </div>
           </div>
-          <div className="header-actions">
-            <span className="demo-badge">DEMO / SYNTHETIC</span>
-            <span className="snapshot-label auto-label">AUTONOMOUS LOOP</span>
-            <button
-              aria-pressed={presentation}
-              onClick={() => setPresentation(!presentation)}
-            >
-              {presentation ? 'Exit presentation' : 'Presentation view'}
-            </button>
+          <div className="reference-header-status">
+            <span className="reference-live-dot" />
+            <strong>AUTONOMOUS SYNTHETIC LOOP</strong>
           </div>
         </header>
-        <KPIStrip events={events} />
-        <div className="director-grid">
-          <Filters state={state} events={events} />
-          <MapOverview
-            displayEvents={events.map((event) => event.display)}
-            filter={filter}
-            selectedId={selected?.id ?? null}
+
+        <MapOverview
+          displayEvents={events.map((event) => event.display)}
+          selectedId={selected?.id ?? null}
+        />
+
+        <aside className="reference-incident-dock" aria-label="Synthetic incident stream">
+          <div className="reference-dock-heading">
+            <div>
+              <span>SYNTHETIC FEED</span>
+              <strong>Incident stream</strong>
+            </div>
+            <em>{String(events.length).padStart(2, '0')}</em>
+          </div>
+          <SimulatedEventFeed
+            visibleEvents={events}
+            selected={selected}
+            setSelectedId={setSelectedId}
           />
-          <aside className="right-column" aria-label="Synthetic event details">
-            <SimulatedEventFeed
-              visibleEvents={visibleEvents}
-              selected={selected}
-              setSelectedId={setSelectedId}
-            />
-            <EventInspector selected={selected} />
-          </aside>
-        </div>
-        <TimelineControls />
+          <EventInspector selected={selected} />
+        </aside>
+
+        <footer className="reference-footer">
+          <span>PORTFOLIO SHOWCASE</span>
+          <strong>NO REAL ATTACK DATA · NO REAL TARGET INFRASTRUCTURE</strong>
+          <span>REACT · TYPESCRIPT · SVG · DETERMINISTIC FIXTURES</span>
+        </footer>
       </main>
     </>
   )
